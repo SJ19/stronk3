@@ -6,10 +6,10 @@ import java.util.List;
  * Created by Corsair on 9-6-2016.
  * Workout represents a complete workout for one training.
  */
-public class Workout {
+public class WorkoutDay {
     private Exercise[] exercises;
 
-    public Workout(Exercise[] exercises) {
+    public WorkoutDay(Exercise[] exercises) {
         this.exercises = exercises;
     }
 }
