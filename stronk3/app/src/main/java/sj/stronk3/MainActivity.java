@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.design.widget.Snackbar;
+import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,6 +23,7 @@ import android.widget.Chronometer;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private Repository repository = new Repository(this);
     private Chronometer chronometer;
+    private Button finishedButton;
+    private Button nextButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,18 +56,47 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         chronometer = (Chronometer) findViewById(R.id.chronometer);
+
         loadExercisesList();
         loadFinishButton();
+        loadNextWorkoutButton();
     }
 
     private void loadFinishButton() {
-        Button button = (Button) findViewById(R.id.buttonFinished);
-        button.setOnClickListener(new View.OnClickListener() {
+        finishedButton = (Button) findViewById(R.id.buttonFinished);
+        finishedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setFinishedButtonEnabled(false);
+                finishedButton.setEnabled(false);
+
+                // Confirmation snackbar with undo button.
+                Snackbar snackbar = Snackbar.make(v, "Workout finished", Snackbar.LENGTH_LONG);
+
+                snackbar.setAction("Undo", new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(View v) {
+                        Snackbar snackbar = Snackbar.make(v, "Workout unfinished", Snackbar.LENGTH_SHORT);
+                        snackbar.show();
+                    }
+                });
+                snackbar.show();
+            }
+        });
+    }
+
+    private void loadNextWorkoutButton() {
+        nextButton = (Button) findViewById(R.id.buttonNextWorkout);
+        nextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setButtonsEnabled(false);
                 repository.nextWorkoutDay(repository.getAccount());
                 loadExercisesList();
+
+                Toast toast = Toast.makeText(getApplicationContext(), "New workout loaded", Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 500);
+                toast.show();
             }
         });
     }
@@ -187,8 +220,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return "Wait 2 minutes for the next set. " + time;
     }
 
-    public void setFinishedButtonEnabled(boolean enabled) {
-        final Button finishedButton = (Button)findViewById(R.id.buttonFinished);
+    public void setButtonsEnabled(boolean enabled) {
         finishedButton.setEnabled(enabled);
+        nextButton.setEnabled(enabled);
     }
 }

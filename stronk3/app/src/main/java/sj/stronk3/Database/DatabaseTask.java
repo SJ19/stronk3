@@ -3,7 +3,6 @@ package sj.stronk3.Database;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Handler;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -66,7 +65,7 @@ public class DatabaseTask extends AsyncTask<String, Void, String> {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                ((MainActivity) activity).setFinishedButtonEnabled(true);
+                ((MainActivity) activity).setButtonsEnabled(true);
             }
         }, 500);
     }
