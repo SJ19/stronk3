@@ -1,9 +1,14 @@
 package sj.stronk3;
 
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -15,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Chronometer;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,6 +28,8 @@ import android.widget.TextView;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import sj.stronk3.Database.Repository;
 import sj.stronk3.Model.Exercise;
@@ -31,6 +39,7 @@ import sj.stronk3.Model.WorkoutDay;
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private Repository repository = new Repository(this);
+    private Chronometer chronometer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +56,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        chronometer = (Chronometer) findViewById(R.id.chronometer);
     }
 
     @Override
@@ -130,15 +141,42 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
-                int set = currentSet.get(position);
-                ((TextView) view).setText(exerciseString(exercises.get(position), set));
-                currentSet.set(position, set++);
+                final int set = currentSet.get(position);
 
-                final Snackbar snackbar = Snackbar.make(view, "Next set, wait 2 minutes.", Snackbar.LENGTH_INDEFINITE);
-                //snackbar.setText("Lolchanged");
+                // Set next set.
+                ((TextView) view).setText(exerciseString(exercises.get(position), set + 1));
+                currentSet.set(position, set + 1);
+
+                final Snackbar snackbar = Snackbar.make(view, setDoneString(set, chronometer.getText().toString()), Snackbar.LENGTH_INDEFINITE);
                 snackbar.show();
 
+                final View sbView = snackbar.getView();
+                final TextView tv = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+                tv.setTextSize(20);
+
+                // Reset chronometer
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                chronometer.start();
+
+                // On every tick, update the snackbar text
+                chronometer.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                    @Override
+                    public void onChronometerTick(Chronometer chronometer) {
+                        snackbar.setText(setDoneString(set, chronometer.getText().toString()));
+
+                        // On 2 minutes mark, play notification sound.
+                        if (chronometer.getText() == "02:00") {
+                            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                            r.play();
+                        }
+                    }
+                });
             }
         });
+    }
+
+    private String setDoneString(int set, String time) {
+        return "Wait 2 minutes for the next set. " + time;
     }
 }
