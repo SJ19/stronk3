@@ -7,9 +7,19 @@ import java.util.List;
  * Workout represents a complete workout for one training.
  */
 public class WorkoutDay {
-    private Exercise[] exercises;
+    private int id;
+    private List<Exercise> exercises;
 
-    public WorkoutDay(Exercise[] exercises) {
+    public WorkoutDay(int id, List<Exercise> exercises) {
+        this.id = id;
         this.exercises = exercises;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public List<Exercise> getExercises() {
+        return exercises;
     }
 }

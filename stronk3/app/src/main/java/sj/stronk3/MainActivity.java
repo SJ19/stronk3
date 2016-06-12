@@ -13,19 +13,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import org.json.JSONObject;
-
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
-import sj.stronk3.Database.DatabaseTask;
-import sj.stronk3.Database.PHPTask;
 import sj.stronk3.Database.Repository;
+import sj.stronk3.Model.Exercise;
 import sj.stronk3.Model.WeightDate;
+import sj.stronk3.Model.WorkoutDay;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private Repository repository = new Repository();
+    private Repository repository = new Repository(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,15 +38,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -92,27 +88,57 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            // Handle the camera action
-            repository.insertWeight(this, 5);
+            loadExercisesList();
         } else if (id == R.id.nav_gallery) {
-            List<WeightDate> weights = repository.getAllWeights();
-            for(WeightDate weight : weights) {
-                Utility.println("lool"+weight.getWeight());
-            }
         } else if (id == R.id.nav_slideshow) {
-            JSONParser jsonParser = new JSONParser();
-            List<WeightDate> weightDates = jsonParser.getWeightDates("[{ \"id\": \"1\", \"weight\": \"1.5\", \"date\": \"2016-06-06 03:12:16\" }, { \"id\": \"2\", \"weight\": \"2\", \"date\": \"2016-06-06 02:16:18\" }, { \"id\": \"3\", \"weight\": \"3\", \"date\": \"2016-06-06 10:25:54\" }, { \"id\": \"4\", \"weight\": \"1\", \"date\": \"2016-06-06 11:31:48\" }, { \"id\": \"5\", \"weight\": \"1\", \"date\": \"2016-06-06 11:35:36\" }, { \"id\": \"6\", \"weight\": \"1\", \"date\": \"2016-06-06 11:36:23\" }, { \"id\": \"7\", \"weight\": \"1\", \"date\": \"2016-06-06 11:38:07\" }, { \"id\": \"8\", \"weight\": \"1\", \"date\": \"2016-06-06 11:39:03\" }, { \"id\": \"9\", \"weight\": \"5\", \"date\": \"2016-06-06 11:47:30\" }]");
-            Log.d("app", "WEIGHT 1:" + weightDates.get(1).getWeight());
         } else if (id == R.id.nav_manage) {
-
         } else if (id == R.id.nav_share) {
-
         } else if (id == R.id.nav_send) {
-
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    private String exerciseString(Exercise exercise, int set) {
+        return exercise.getName() + " sets: (" + (set == -1 ? "W" : set) + "/" + exercise.getSets() + ") - reps: " + exercise.getRepetitions();
+    }
+
+    /**
+     * Loads the exercises from database, only call once.
+     */
+    private void loadExercisesList() {
+        Repository repo = new Repository(this);
+
+        int workoutDayId = repository.getWorkoutDayForAccount(1);
+        final List<Exercise> exercises = repo.getAllExercisesForWorkoutDay(workoutDayId);
+        List<String> exerciseStrings = new ArrayList<>();
+        final List<Integer> currentSet = new ArrayList<>();
+
+        for (Exercise exercise : exercises) {
+            exerciseStrings.add(exerciseString(exercise, -1));
+            currentSet.add(-1);
+        }
+
+        ListAdapter adapter = new ArrayAdapter<String>(this, R.layout.activity_rows, exerciseStrings);
+
+        final ListView listView = (ListView) findViewById(R.id.listViewExercises);
+        listView.setAdapter(adapter);
+        listView.setSelection(adapter.getCount() - 1);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                int set = currentSet.get(position);
+                ((TextView) view).setText(exerciseString(exercises.get(position), set));
+                currentSet.set(position, set++);
+
+                final Snackbar snackbar = Snackbar.make(view, "Next set, wait 2 minutes.", Snackbar.LENGTH_INDEFINITE);
+                //snackbar.setText("Lolchanged");
+                snackbar.show();
+
+            }
+        });
     }
 }
