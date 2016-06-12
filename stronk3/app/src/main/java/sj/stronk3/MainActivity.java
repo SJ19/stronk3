@@ -5,10 +5,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,20 +17,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import sj.stronk3.Database.Repository;
 import sj.stronk3.Model.Exercise;
-import sj.stronk3.Model.WeightDate;
 import sj.stronk3.Model.WorkoutDay;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -58,6 +52,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         navigationView.setNavigationItemSelectedListener(this);
 
         chronometer = (Chronometer) findViewById(R.id.chronometer);
+        loadExercisesList();
+        loadFinishButton();
+    }
+
+    private void loadFinishButton() {
+        Button button = (Button) findViewById(R.id.buttonFinished);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setFinishedButtonEnabled(false);
+                repository.nextWorkoutDay(repository.getAccount());
+                loadExercisesList();
+            }
+        });
     }
 
     @Override
@@ -99,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_camera) {
-            loadExercisesList();
+            //loadExercisesList();
         } else if (id == R.id.nav_gallery) {
         } else if (id == R.id.nav_slideshow) {
         } else if (id == R.id.nav_manage) {
@@ -120,13 +128,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      * Loads the exercises from database, only call once.
      */
     private void loadExercisesList() {
-        Repository repo = new Repository(this);
+        WorkoutDay workoutDay = repository.getAccount().getWorkoutDay();
 
-        int workoutDayId = repository.getWorkoutDayForAccount(1);
-        final List<Exercise> exercises = repo.getAllExercisesForWorkoutDay(workoutDayId);
         List<String> exerciseStrings = new ArrayList<>();
         final List<Integer> currentSet = new ArrayList<>();
 
+        final List<Exercise> exercises = workoutDay.getExercises();
         for (Exercise exercise : exercises) {
             exerciseStrings.add(exerciseString(exercise, -1));
             currentSet.add(-1);
@@ -165,7 +172,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         snackbar.setText(setDoneString(set, chronometer.getText().toString()));
 
                         // On 2 minutes mark, play notification sound.
-                        if (chronometer.getText() == "02:00") {
+                        if (chronometer.getText().equals("02:00")) {
                             Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
                             Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
                             r.play();
@@ -178,5 +185,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private String setDoneString(int set, String time) {
         return "Wait 2 minutes for the next set. " + time;
+    }
+
+    public void setFinishedButtonEnabled(boolean enabled) {
+        final Button finishedButton = (Button)findViewById(R.id.buttonFinished);
+        finishedButton.setEnabled(enabled);
     }
 }

@@ -6,12 +6,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import sj.stronk3.Model.Account;
 import sj.stronk3.Model.Exercise;
 import sj.stronk3.Model.WorkoutDay;
 import sj.stronk3.Utility;
@@ -27,61 +26,6 @@ public class MySQLContext implements DatabaseContext {
     }
 
     @Override
-    public boolean insertWeight(double weight) {
-        Utility.println("INSERTING WEIGHT: " + Double.toString(weight));
-        String result = null;
-        try {
-            result = new DatabaseTask(activity, "INSERT INTO Weight(weight,date)VALUES(" + weight + ",convert_tz(now(),@@session.time_zone,'+02:00'))", QueryTypes.EXECUTE, true).execute().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return (result == "1" ? true : false);
-    }
-
-    @Override
-    public double getLastInsertedWeight() {
-        double weight = 0;
-        try {
-            String result = new DatabaseTask(activity, Queries.GET_LAST_INSERTED_WEIGHT).execute().get();
-            Utility.println("LAST INSERTED WEIGHT STRING: " + result);
-            JSONArray jsonArray = parseJSON(result);
-            JSONObject jsonObject = jsonArray.getJSONObject(0);
-            weight = Double.parseDouble(jsonObject.getString("weight"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return weight;
-    }
-
-    @Override
-    public boolean deleteLastInsertedWeight() {
-        String result = null;
-        try {
-            result = new DatabaseTask(activity, Queries.DELETE_LAST_INSERTED_WEIGHT).execute().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return (result == "1" ? true : false);
-    }
-
-    @Override
-    public boolean deleteWeight(int id) {
-        String result = null;
-        try {
-            result = new DatabaseTask(activity, "DELETE FROM Weight WHERE id = " + id, QueryTypes.EXECUTE).execute().get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-        return (result == "1" ? true : false);
-    }
-
-    @Override
     public List<WorkoutDay> getAllWorkoutDays() {
         List<WorkoutDay> workoutDays = new ArrayList<>();
         try {
@@ -90,10 +34,11 @@ public class MySQLContext implements DatabaseContext {
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
-                int id = Integer.parseInt(jsonObject.getString("id"));
+                int id = jsonObject.getInt("id");
+                int order = jsonObject.getInt("order");
                 List<Exercise> exercises = getAllExercisesForWorkoutDay(id);
 
-                WorkoutDay workoutDay = new WorkoutDay(id, exercises);
+                WorkoutDay workoutDay = new WorkoutDay(id, order, exercises);
                 workoutDays.add(workoutDay);
             }
         } catch (Exception e) {
@@ -126,17 +71,48 @@ public class MySQLContext implements DatabaseContext {
     }
 
     @Override
-    public int getWorkoutDayForAccount(int accountId) {
-        int id = 0;
+    public Account getAccount(int accountId) {
+        WorkoutDay workoutDay = null;
         try {
-            String result = new DatabaseTask(activity, "SELECT WorkoutDay_id FROM Account WHERE id = " + accountId, QueryTypes.READ).execute().get();
+            String result = new DatabaseTask(activity, "SELECT * FROM Account WHERE id = " + accountId, QueryTypes.READ).execute().get();
             JSONArray jsonArray = parseJSON(result);
             JSONObject jsonObject = jsonArray.getJSONObject(0);
-            id = jsonObject.getInt("WorkoutDay_id");
+            int workoutDayId = jsonObject.getInt("WorkoutDay_id");
+            workoutDay = getWorkoutDay(workoutDayId);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return id;
+        if (workoutDay == null) {
+            return null;
+        }
+        return new Account(accountId, workoutDay);
+    }
+
+    private WorkoutDay getWorkoutDay(int workoutDayId) {
+        WorkoutDay workoutDay = null;
+        try {
+            String resultSelect = new DatabaseTask(activity, "SELECT * FROM WorkoutDay WHERE id = " + workoutDayId, QueryTypes.READ).execute().get();
+            JSONArray jsonArray = parseJSON(resultSelect);
+            JSONObject jsonObject = jsonArray.getJSONObject(0);
+            int id = jsonObject.getInt("id");
+            int order = jsonObject.getInt("order");
+            List<Exercise> exercises = getAllExercisesForWorkoutDay(id);
+            workoutDay = new WorkoutDay(id, order, exercises);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return workoutDay;
+    }
+
+    @Override
+    public boolean setWorkoutDay(Account account, WorkoutDay workoutDay) {
+        String result = null;
+        try {
+            result = new DatabaseTask(activity, "UPDATE Account SET WorkoutDay_id = " + workoutDay.getId() + " WHERE id = " + account.getId(), QueryTypes.EXECUTE).execute().get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (result == "1" ? true : false);
     }
 
     private JSONArray parseJSON(String jsonString) {

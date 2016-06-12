@@ -57,25 +57,21 @@ public class DatabaseTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        return readQuery(query);
+        return executeQuery(query);
     }
 
     @Override
     protected void onPostExecute(String result) {
-        Log.d("app", result);
-
-        // Enable buttons after 4 seconds.
-        /*if (enableButtons) {
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    ((MainActivity) activity).setWeightInputEnabled(true);
-                }
-            }, 4000);
-        }*/
+        // Delay button enable to avoid spam.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                ((MainActivity) activity).setFinishedButtonEnabled(true);
+            }
+        }, 500);
     }
 
-    private String readQuery(String query) {
+    private String executeQuery(String query) {
         Utility.println("QUERY: " + query);
         String response = "";
         try {

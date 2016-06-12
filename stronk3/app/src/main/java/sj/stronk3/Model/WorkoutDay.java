@@ -8,15 +8,21 @@ import java.util.List;
  */
 public class WorkoutDay {
     private int id;
+    private int order;
     private List<Exercise> exercises;
 
-    public WorkoutDay(int id, List<Exercise> exercises) {
+    public WorkoutDay(int id, int order, List<Exercise> exercises) {
         this.id = id;
+        this.order = order;
         this.exercises = exercises;
     }
 
     public int getId() {
         return id;
+    }
+
+    public int getOrder() {
+        return order;
     }
 
     public List<Exercise> getExercises() {
