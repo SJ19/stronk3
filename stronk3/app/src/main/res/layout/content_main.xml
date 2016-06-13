@@ -14,7 +14,7 @@
 
     <ListView
         android:layout_width="wrap_content"
-        android:layout_height="400dip"
+        android:layout_height="500dip"
         android:id="@+id/listViewExercises"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true" />
@@ -28,17 +28,9 @@
     <Button
         android:layout_width="200dip"
         android:layout_height="wrap_content"
-        android:text="Finished"
-        android:id="@+id/buttonFinished"
-        android:layout_marginTop="53dp"
-        android:layout_below="@+id/listViewExercises"
-        android:layout_centerHorizontal="true" />
-
-    <Button
-        android:layout_width="200dip"
-        android:layout_height="wrap_content"
         android:text="Next workout"
         android:id="@+id/buttonNextWorkout"
-        android:layout_below="@+id/buttonFinished"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp" />
 </RelativeLayout>

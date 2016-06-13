@@ -5,10 +5,12 @@ package sj.stronk3.Model;
  */
 public class Account {
     private int id;
+    private String username;
     private WorkoutDay workoutDay;
 
-    public Account(int id, WorkoutDay workoutDay) {
+    public Account(int id, String username, WorkoutDay workoutDay) {
         this.id = id;
+        this.username = username;
         this.workoutDay = workoutDay;
     }
 
@@ -22,5 +24,9 @@ public class Account {
 
     public WorkoutDay getWorkoutDay() {
         return workoutDay;
+    }
+
+    public String getUsername() {
+        return username;
     }
 }

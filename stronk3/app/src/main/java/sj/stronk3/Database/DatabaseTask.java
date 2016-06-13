@@ -27,8 +27,11 @@ import sj.stronk3.Utility;
  */
 public class DatabaseTask extends AsyncTask<String, Void, String> {
 
-    public static final String READ_QUERY_URL = "http://sjacobs.me/fitness/readquery.php";
-    public static final String EXECUTE_QUERY_URL = "http://sjacobs.me/fitness/executequery.php";
+    //public static final String READ_QUERY_URL = "http://sjacobs.me/fitness/readquery.php";
+    //public static final String EXECUTE_QUERY_URL = "http://sjacobs.me/fitness/executequery.php";
+
+    public static final String READ_QUERY_URL = "http://sjacobs.nl/fit/readquery.php";
+    public static final String EXECUTE_QUERY_URL = "http://sjacobs.nl/fit/executequery.php";
 
     private String query;
     private QueryTypes queryType;

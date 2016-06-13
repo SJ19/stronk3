@@ -8,11 +8,13 @@ import java.util.List;
  */
 public class WorkoutDay {
     private int id;
+    private String name;
     private int order;
     private List<Exercise> exercises;
 
-    public WorkoutDay(int id, int order, List<Exercise> exercises) {
+    public WorkoutDay(int id, String name, int order, List<Exercise> exercises) {
         this.id = id;
+        this.name = name;
         this.order = order;
         this.exercises = exercises;
     }
@@ -27,5 +29,9 @@ public class WorkoutDay {
 
     public List<Exercise> getExercises() {
         return exercises;
+    }
+
+    public String getName() {
+        return name;
     }
 }

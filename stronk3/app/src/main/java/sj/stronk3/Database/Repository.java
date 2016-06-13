@@ -5,7 +5,9 @@ import android.app.Activity;
 import java.util.List;
 
 import sj.stronk3.Model.Account;
+import sj.stronk3.Model.Exercise;
 import sj.stronk3.Model.WorkoutDay;
+import sj.stronk3.Utility;
 
 /**
  * Created by Corsair on 6-6-2016.
@@ -27,16 +29,25 @@ public class Repository {
         this.databaseContext = databaseContext;
         this.activity = activity;
 
-        workoutDays = databaseContext.getAllWorkoutDays();
         account = databaseContext.getAccount(ACCOUNT_ID);
+        workoutDays = databaseContext.getAllWorkoutDaysForAccount(account);
+
+        for (WorkoutDay workday : workoutDays) {
+            Utility.println("yoo");
+            Utility.println(workday.getName());
+        }
     }
 
     ///
 
-    public void nextWorkoutDay(Account account) {
-        WorkoutDay workoutDay = getNextWorkoutDay(account);
+    public void nextWorkoutDay() {
+        WorkoutDay workoutDay = getNextWorkoutDay();
         databaseContext.setWorkoutDay(account, workoutDay);
         account.setWorkoutDay(workoutDay);
+    }
+
+    public boolean updateExerciseWeight(Exercise exercise) {
+        return databaseContext.updateExerciseWeight(account, exercise);
     }
 
     /// no databasecontext used below
@@ -50,17 +61,23 @@ public class Repository {
         return null;
     }
 
-    private WorkoutDay getNextWorkoutDay(Account account) {
+    private WorkoutDay getNextWorkoutDay() {
         int currentOrder = account.getWorkoutDay().getOrder();
-        for (WorkoutDay workoutDay : workoutDays) {
-            if (workoutDay.getOrder() == (currentOrder + 1)) {
-                return workoutDay;
+        for (int i = 0; i < workoutDays.size(); i++) {
+            if (workoutDays.get(i) == account.getWorkoutDay()) {
+                int maxIndex = workoutDays.size() - 1;
+                int nextIndex = i + 1;
+                if (maxIndex < nextIndex) {
+                    break;
+                }
+                WorkoutDay workoutDay = workoutDays.get(i + 1);
+                return workoutDays.get(i + 1);
             }
         }
-        return getFirstWorkoutDayNEW();
+        return getFirstWorkoutDay();
     }
 
-    private WorkoutDay getFirstWorkoutDayNEW() {
+    private WorkoutDay getFirstWorkoutDay() {
         WorkoutDay firstWorkoutDay = workoutDays.get(0);
         for (WorkoutDay workoutDay : workoutDays) {
             if (workoutDay.getOrder() < firstWorkoutDay.getOrder()) {

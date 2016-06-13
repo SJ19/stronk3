@@ -1,11 +1,16 @@
 package sj.stronk3;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -22,12 +27,14 @@ import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import sj.stronk3.Database.MySQLContext;
 import sj.stronk3.Database.Repository;
 import sj.stronk3.Model.Exercise;
 import sj.stronk3.Model.WorkoutDay;
@@ -58,11 +65,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
         loadExercisesList();
-        loadFinishButton();
+        //loadFinishButton();
         loadNextWorkoutButton();
     }
 
-    private void loadFinishButton() {
+    /*private void loadFinishButton() {
         finishedButton = (Button) findViewById(R.id.buttonFinished);
         finishedButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -83,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 snackbar.show();
             }
         });
-    }
+    }*/
 
     private void loadNextWorkoutButton() {
         nextButton = (Button) findViewById(R.id.buttonNextWorkout);
@@ -91,11 +98,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 setButtonsEnabled(false);
-                repository.nextWorkoutDay(repository.getAccount());
+                repository.nextWorkoutDay();
                 loadExercisesList();
 
                 Toast toast = Toast.makeText(getApplicationContext(), "New workout loaded", Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 500);
+                toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 750);
                 toast.show();
             }
         });
@@ -154,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private String exerciseString(Exercise exercise, int set) {
-        return exercise.getName() + " sets: (" + (set == -1 ? "W" : set) + "/" + exercise.getSets() + ") - reps: " + exercise.getRepetitions();
+        return exercise.getName() + " sets: (" + (set == -1 ? "W" : set) + "/" + exercise.getSets() + ") - reps: " + exercise.getRepetitions() + " [ " + exercise.getWeight() + " KG ]";
     }
 
     /**
@@ -162,6 +169,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
      */
     private void loadExercisesList() {
         WorkoutDay workoutDay = repository.getAccount().getWorkoutDay();
+        // getActionBar().setTitle("WorkoutDay: " + workoutDay.getName());//null
+        getSupportActionBar().setTitle("WorkoutDay: " + workoutDay.getName());
 
         List<String> exerciseStrings = new ArrayList<>();
         final List<Integer> currentSet = new ArrayList<>();
@@ -177,6 +186,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         final ListView listView = (ListView) findViewById(R.id.listViewExercises);
         listView.setAdapter(adapter);
         listView.setSelection(adapter.getCount() - 1);
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                numberPickerDialog(exercises.get(position));
+                return true;
+            }
+        });
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -221,7 +238,58 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void setButtonsEnabled(boolean enabled) {
-        finishedButton.setEnabled(enabled);
+        //finishedButton.setEnabled(enabled);
         nextButton.setEnabled(enabled);
+    }
+
+    private String[] nums = {
+            "20", "22.5", "25", "27.5",
+            "30", "32.5", "35", "37.5",
+            "40", "42.5", "45", "47.5",
+            "50", "52.5", "55", "57.5",
+            "60", "62.5", "65", "67.5",
+            "70", "72.5", "75", "77.5",
+            "80", "82.5", "85", "87.5",
+            "90", "92.5", "95", "97.5",
+            "100", "102.5", "105", "107.5",
+            "110", "112.5", "115", "117.5",
+            "120", "122.5", "125", "127.5",
+            "130", "132.5", "135", "137.5",
+            "140", "142.5", "145", "147.5",
+            "150", "152.5", "155", "157.5",
+            "160", "162.5", "165", "167.5"
+    };
+
+    private void numberPickerDialog(final Exercise exercise) {
+        final NumberPicker numberPicker = new NumberPicker(MainActivity.this);
+        numberPicker.setDisplayedValues(nums);
+        numberPicker.setMinValue(0);
+        numberPicker.setMaxValue(nums.length - 1);
+        numberPicker.setWrapSelectorWheel(false);
+
+        for (int i = 0; i < nums.length; i++) {
+            if (Double.parseDouble(nums[i]) == exercise.getWeight()) {
+                numberPicker.setValue(i);
+            }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(numberPicker);
+        builder.setTitle("Set weight for " + exercise.getName());
+        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                exercise.setWeight(Double.parseDouble(nums[numberPicker.getValue()]));
+                repository.updateExerciseWeight(exercise);
+                loadExercisesList();
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+        builder.show();
     }
 }

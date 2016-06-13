@@ -10,9 +10,10 @@ import sj.stronk3.Model.WorkoutDay;
  * Created by Corsair on 6-6-2016.
  */
 public interface DatabaseContext {
-    List<WorkoutDay> getAllWorkoutDays();
+    List<WorkoutDay> getAllWorkoutDaysForAccount(Account account);
     List<Exercise> getAllExercisesForWorkoutDay(int workoutDayId);
     Account getAccount(int accountId);
-
+    boolean updateExerciseWeight(Account account, Exercise exercise);
+    double getExerciseWeight(Account account, Exercise exercise);
     boolean setWorkoutDay(Account account, WorkoutDay workoutDay);
 }
