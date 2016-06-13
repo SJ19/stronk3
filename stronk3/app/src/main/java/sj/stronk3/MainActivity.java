@@ -102,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 loadExercisesList();
 
                 Toast toast = Toast.makeText(getApplicationContext(), "New workout loaded", Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 750);
+                toast.setGravity(Gravity.CENTER_HORIZONTAL, 0, 400);
                 toast.show();
             }
         });

@@ -42,8 +42,9 @@ public class Repository {
 
     public void nextWorkoutDay() {
         WorkoutDay workoutDay = getNextWorkoutDay();
-        databaseContext.setWorkoutDay(account, workoutDay);
+        Utility.println("nextday:" + workoutDay.getName());
         account.setWorkoutDay(workoutDay);
+        databaseContext.setWorkoutDay(account, workoutDay);
     }
 
     public boolean updateExerciseWeight(Exercise exercise) {
@@ -62,17 +63,17 @@ public class Repository {
     }
 
     private WorkoutDay getNextWorkoutDay() {
-        int currentOrder = account.getWorkoutDay().getOrder();
-        for (int i = 0; i < workoutDays.size(); i++) {
-            if (workoutDays.get(i) == account.getWorkoutDay()) {
-                int maxIndex = workoutDays.size() - 1;
-                int nextIndex = i + 1;
-                if (maxIndex < nextIndex) {
-                    break;
-                }
-                WorkoutDay workoutDay = workoutDays.get(i + 1);
-                return workoutDays.get(i + 1);
+        Utility.println(account.getWorkoutDay().getName() + ", " +account.getWorkoutDay().getId());
+        int currentDayIndex = -1;
+        for(WorkoutDay workoutDay : workoutDays ) {
+            if (workoutDay.getId() == account.getWorkoutDay().getId()) {
+                 currentDayIndex = workoutDays.indexOf(workoutDay);
             }
+        }
+        int lastIndex = (workoutDays.size() - 1);
+        Utility.println("current:"+currentDayIndex+",lastindex:"+lastIndex);
+        if (currentDayIndex < lastIndex) {
+            return workoutDays.get(currentDayIndex + 1);
         }
         return getFirstWorkoutDay();
     }
