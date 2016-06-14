@@ -64,13 +64,14 @@ public class DatabaseTask extends AsyncTask<String, Void, String> {
 
     @Override
     protected void onPostExecute(String result) {
+        ((MainActivity) activity).setButtonsEnabled(true);
         // Delay button enable to avoid spam.
-        new Handler().postDelayed(new Runnable() {
+        /*new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 ((MainActivity) activity).setButtonsEnabled(true);
             }
-        }, 500);
+        }, 500);*/
     }
 
     private String executeQuery(String query) {

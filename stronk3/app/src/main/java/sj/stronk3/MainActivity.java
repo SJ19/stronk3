@@ -65,32 +65,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         chronometer = (Chronometer) findViewById(R.id.chronometer);
 
         loadExercisesList();
-        //loadFinishButton();
         loadNextWorkoutButton();
     }
-
-    /*private void loadFinishButton() {
-        finishedButton = (Button) findViewById(R.id.buttonFinished);
-        finishedButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finishedButton.setEnabled(false);
-
-                // Confirmation snackbar with undo button.
-                Snackbar snackbar = Snackbar.make(v, "Workout finished", Snackbar.LENGTH_LONG);
-
-                snackbar.setAction("Undo", new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        Snackbar snackbar = Snackbar.make(v, "Workout unfinished", Snackbar.LENGTH_SHORT);
-                        snackbar.show();
-                    }
-                });
-                snackbar.show();
-            }
-        });
-    }*/
 
     private void loadNextWorkoutButton() {
         nextButton = (Button) findViewById(R.id.buttonNextWorkout);
@@ -161,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private String exerciseString(Exercise exercise, int set) {
-        return exercise.getName() + " sets: (" + (set == -1 ? "W" : set) + "/" + exercise.getSets() + ") - reps: " + exercise.getRepetitions() + " [ " + exercise.getWeight() + " KG ]";
+        return exercise.getName() + " (" + (set == -1 ? "W" : set) + "/" + exercise.getSets() + ") - " + exercise.getRepetitions() + " * " + exercise.getWeight() + "KG";
     }
 
     /**
@@ -209,7 +185,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 final View sbView = snackbar.getView();
                 final TextView tv = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
-                tv.setTextSize(20);
+                tv.setTextSize(25);
+               // tv.setGravity(Gravity.CENTER_HORIZONTAL);
+                tv.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
 
                 // Reset chronometer
                 chronometer.setBase(SystemClock.elapsedRealtime());
@@ -234,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private String setDoneString(int set, String time) {
-        return "Wait 2 minutes for the next set. " + time;
+        return time;
     }
 
     public void setButtonsEnabled(boolean enabled) {

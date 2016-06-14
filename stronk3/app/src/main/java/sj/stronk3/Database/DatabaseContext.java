@@ -11,7 +11,7 @@ import sj.stronk3.Model.WorkoutDay;
  */
 public interface DatabaseContext {
     List<WorkoutDay> getAllWorkoutDaysForAccount(Account account);
-    List<Exercise> getAllExercisesForWorkoutDay(int workoutDayId);
+    List<Exercise> getAllExercisesForWorkoutDay(int accountId, int workoutDayId);
     Account getAccount(int accountId);
     boolean updateExerciseWeight(Account account, Exercise exercise);
     double getExerciseWeight(Account account, Exercise exercise);

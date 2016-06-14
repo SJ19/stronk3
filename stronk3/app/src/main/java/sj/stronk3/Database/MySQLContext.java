@@ -37,7 +37,7 @@ public class MySQLContext implements DatabaseContext {
                 int id = jsonObject.getInt("id");
                 String name = jsonObject.getString("name");
                 int order = jsonObject.getInt("order");
-                List<Exercise> exercises = getAllExercisesForWorkoutDay(id);
+                List<Exercise> exercises = getAllExercisesForWorkoutDay(account.getId(), id);
 
                 WorkoutDay workoutDay = new WorkoutDay(id, name, order, exercises);
                 workoutDays.add(workoutDay);
@@ -49,10 +49,10 @@ public class MySQLContext implements DatabaseContext {
     }
 
     @Override
-    public List<Exercise> getAllExercisesForWorkoutDay(int workoutDayId) {
+    public List<Exercise> getAllExercisesForWorkoutDay(int accountId, int workoutDayId) {
         List<Exercise> exercises = new ArrayList<>();
         try {
-            String result = new DatabaseTask(activity, "SELECT e.*, ae.weight FROM WorkoutDay_Exercise we, Exercise e, Account_Exercise ae WHERE we.Exercise_id = e.id AND e.id = ae.Exercise_id AND WorkoutDay_id = "+workoutDayId+" ORDER BY `order`", QueryTypes.READ).execute().get();
+            String result = new DatabaseTask(activity, "SELECT e.*, ae.weight FROM WorkoutDay_Exercise we, Exercise e, Account_Exercise ae WHERE ae.Account_id = " + accountId + " AND we.Exercise_id = e.id AND e.id = ae.Exercise_id AND WorkoutDay_id = " + workoutDayId + " ORDER BY `order`", QueryTypes.READ).execute().get();
             JSONArray jsonArray = parseJSON(result);
 
             for (int i = 0; i < jsonArray.length(); i++) {
@@ -81,7 +81,7 @@ public class MySQLContext implements DatabaseContext {
             JSONObject jsonObject = jsonArray.getJSONObject(0);
             username = jsonObject.getString("username");
             int workoutDayId = jsonObject.getInt("WorkoutDay_id");
-            workoutDay = getWorkoutDay(workoutDayId);
+            workoutDay = getWorkoutDay(accountId, workoutDayId);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -95,7 +95,7 @@ public class MySQLContext implements DatabaseContext {
     public boolean updateExerciseWeight(Account account, Exercise exercise) {
         String result = null;
         try {
-            result = new DatabaseTask(activity, "UPDATE Account_Exercise SET weight = " + exercise.getWeight() + " WHERE Account_id = "+account.getId()+" AND Exercise_id = " + exercise.getId(), QueryTypes.EXECUTE).execute().get();
+            result = new DatabaseTask(activity, "UPDATE Account_Exercise SET weight = " + exercise.getWeight() + " WHERE Account_id = " + account.getId() + " AND Exercise_id = " + exercise.getId(), QueryTypes.EXECUTE).execute().get();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -116,7 +116,7 @@ public class MySQLContext implements DatabaseContext {
         return weight;
     }
 
-    private WorkoutDay getWorkoutDay(int workoutDayId) {
+    private WorkoutDay getWorkoutDay(int accountId, int workoutDayId) {
         WorkoutDay workoutDay = null;
         try {
             String resultSelect = new DatabaseTask(activity, "SELECT * FROM WorkoutDay WHERE id = " + workoutDayId, QueryTypes.READ).execute().get();
@@ -125,7 +125,7 @@ public class MySQLContext implements DatabaseContext {
             int id = jsonObject.getInt("id");
             String name = jsonObject.getString("name");
             int order = jsonObject.getInt("order");
-            List<Exercise> exercises = getAllExercisesForWorkoutDay(id);
+            List<Exercise> exercises = getAllExercisesForWorkoutDay(accountId, id);
             workoutDay = new WorkoutDay(id, name, order, exercises);
         } catch (Exception e) {
             e.printStackTrace();
